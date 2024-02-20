@@ -1,5 +1,6 @@
 module.exports = {
-    extends: ['eslint:recommended', 'plugin:vue/vue3-recommended'],
+    extends: ['vue', 'standard', 'eslint:recommended', 'plugin:vue/vue3-recommended'],
+    plugins: ['import', 'vue'],
     parserOptions: {
       ecmaVersion: 2020,
       sourceType: 'module',
