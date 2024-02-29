@@ -4,16 +4,39 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Listing;
+use Auth;
 use Illuminate\Http\Request;
 
 class ListingController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware("auth")->except(['index', 'show']);
+        $this->authorizeResource(Listing::class, 'listing');
+    }
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return inertia('Listing/Index', ['listings' => Listing::all()]);
+        // return inertia('Listing/Index', ['listings' => Listing::all()]);
+        $filters = $request->only([
+            'priceFrom', 'priceTo', 'beds', 'baths', 'areaFrom', 'areaTo'
+        ]);
+
+        /*if ($filters['priceFrom'] ?? false) {
+            $query = $query->where('price', '>=', $filters['priceFrom']);
+        }*/
+
+        $query = Listing::mostRecent()
+            ->filter($filters)
+            ->paginate(10)
+            ->withQueryString();
+
+        return inertia('Listing/Index', [
+            'filters' => $filters,
+            'listings' => $query
+        ]);
     }
 
     /**
@@ -29,7 +52,8 @@ class ListingController extends Controller
      */
     public function store(Request $request)
     {
-        Listing::create(
+        $request->user()->listings()->create(
+            // Listing::create(
             $request->validate([
                 'beds' => 'required|integer|min:1|max:20',
                 'baths' => 'required|integer|min:1|max:20',
@@ -42,7 +66,7 @@ class ListingController extends Controller
             ])
         );
 
-        return redirect()->route('listing.index')->with('success', 'Listing is created');
+        return redirect()->route('listing.index')->with('message', 'Listing is created');
     }
 
     /**
@@ -50,6 +74,10 @@ class ListingController extends Controller
      */
     public function show(Listing $listing)
     {
+        /*if(Auth::user()->cannot('view', $listing)){
+            abort(403);
+        }*/
+        $this->authorize('view', $listing);
         return inertia('Listing/Show', ['listing' => $listing]);
     }
 
@@ -79,17 +107,7 @@ class ListingController extends Controller
             ])
         );
 
-        return redirect()->route('listing.index')->with('success', 'Listing is edited');
+        return redirect()->route('listing.index')->with('message', 'Listing is edited');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Listing $listing)
-    {
-        $listing->delete();
-
-        return redirect()->back()
-            ->with('success', 'Listing record is deleted');
-    }
 }
