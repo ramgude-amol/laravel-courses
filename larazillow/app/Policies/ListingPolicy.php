@@ -28,14 +28,18 @@ class ListingPolicy
         return true;
     }
 
-    public function view(User $user, Listing $listing)
+    public function view(?User $user, Listing $listing)
     {
-        return true;
+        if ($listing->by_user_id === $user?->id) {
+            return true;
+        }
+
+        return $listing->sold_at === null;
     }
 
     public function update(User $user, Listing $listing)
     {
-        return $user->id == $listing->by_user_id;
+        return $listing->sold_at === null && ($user->id === $listing->by_user_id);
     }
 
     public function delete(User $user, Listing $listing)

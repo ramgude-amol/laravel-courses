@@ -6,6 +6,7 @@ use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Listing extends Model
@@ -20,6 +21,16 @@ class Listing extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'by_user_id');
+    }
+
+    public function images(): HasMany
+    {
+        return $this->hasMany(ListingImages::class);
+    }
+
+    public function offers(): HasMany
+    {
+        return $this->hasMany(Offer::class, 'listing_id');
     }
 
     public function scopeMostRecent(Builder $query): Builder
@@ -57,5 +68,10 @@ class Listing extends Model
                 $query :
                 $query->orderBy($value, $filters['order'] ?? 'desc')
         );
+    }
+
+    public function scopeWithoutSold(Builder $query): Builder
+    {
+        return $query->whereNull('sold_at');
     }
 }

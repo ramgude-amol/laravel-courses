@@ -101,7 +101,7 @@ const form = useForm({
     price: props.listing.price
 })
 
-const update = () => form.put(route("listing.update", props.listing.id));
+const update = () => form.put(route("realtor.listing.update", props.listing.id));
 </script>
 
 <script>

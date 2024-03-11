@@ -20,3 +20,9 @@ services:
     ports:
       - 1025:1025
       - 8025:8025
+  mailpit:
+    image: "axllent/mailpit:latest"
+    profiles: [app]
+    ports:
+        - "1025:1025"
+        - "${FORWARD_MAILPIT_PORT}:8025"

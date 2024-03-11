@@ -1,8 +1,12 @@
 <template>
     <div class="flex flex-col-reverse md:grid md:grid-cols-12 gap-4">
-        <Box class="md:col-span-7 flex items-center w-full">
-            <div class="w-full text-center font-medium text-gray-500">No images</div>
+        <Box v-if="listing.images.length" class="md:col-span-7 flex items-center w-full">
+            <div class="grid grid-cols-2 gap-1">
+                <img v-for="image in listing.images" :key="image.id" :src="image.src">
+            </div>
         </Box>
+        <EmptyState v-else class="md:col-span-7 flex items-center">No images</EmptyState>
+
         <div class="md:col-span-5 flex flex-col gap-4">
             <Box>
                 <Price :price="listing.price" class="text-2xl font-bold"></Price>
@@ -48,6 +52,10 @@
                     </div>
                 </div>
             </Box>
+
+            <Makeoffer v-if="!offerMade" :listing-id="listing.id" :price="listing.price" @offeru="offer = $event" />
+
+            <OfferMade v-if="offerMade" :offer="offerMade"></OfferMade>
         </div>
     </div>
 </template>
@@ -59,13 +67,22 @@ import Price from '@/Components/Price.vue';
 import Box from '@/Components/UI/Box.vue';
 import MainLayout from '@/Layout/MainLayout.vue';
 import { useMonthlyPayment } from '@/Composables/useMonthlyPayment'
+import Makeoffer from '@/Pages/Listing/Show/Components/Makeoffer.vue';
 import { ref } from 'vue';
+import OfferMade from '@/Pages/Listing/Show/Components/OfferMade.vue';
+import EmptyState from '@/Components/UI/EmptyState.vue';
 
 const interestRate = ref(2.5)
 const duration = ref(25)
-const props = defineProps({ listing: Object })
+const props = defineProps({
+    listing: Object,
+    offerMade: Object
+})
 
-const { monthlyPayment, totalInterestPaid, totalPaid } = useMonthlyPayment(props.listing.price, interestRate, duration)
+const offer = ref(props.listing.price).value
+const { monthlyPayment, totalInterestPaid, totalPaid } = useMonthlyPayment(
+    offer, interestRate, duration
+)
 </script>
 
 
